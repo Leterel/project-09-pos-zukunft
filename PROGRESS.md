@@ -24,3 +24,12 @@ Desktop und 390px visuell geprüft. Geladener Tab speichert ohne Netzwerk;
 Neuladen benötigt weiterhin den lokalen Server. Export ohne Restorefunktion.
 Keine Hardware-/Stromausfall-, TSE-/DSFinV-K-/GoBD-/DSGVO-Konformitätsprüfung.
 Eigene Testdaten, keine Konten/Anbieterverträge/Buchungen oder öffentlichen Dienste.
+
+## 27.10.2026 — ausdrückliche neue Veröffentlichungserlaubnis
+
+Nutzer hat das POS ebenfalls für GitHub freigegeben und wünscht zusätzlich alle
+seine GitHub-Repositories auf GitLab. Öffentlicher POS-Quellstand wird unter
+Leterel/pos-zukunft veröffentlicht. Verlaufscan ohne Fund. Keine tatsächlichen
+Zahlungen, Steuerfreigaben oder Supportverträge werden dadurch hinzugefügt.
+GitLab-Ziel und vorhandener Zugang werden getrennt geprüft; private bestehende
+GitHub-Repositories dürfen durch die Übertragung nicht öffentlich werden.

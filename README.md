@@ -34,7 +34,7 @@ Gutscheine und Mitarbeiterschichten gehören noch nicht zum ersten Umfang.
 - RECHT-PRUEFPUNKTE.md: deutsche Prüfthemen und offizielle Quellen.
 
 Es wurden keine Betriebe kontaktiert, Pilotkunden gewonnen, Zahlungsanbieter
-gebucht, Gebühren erhoben oder Geräte gekauft. Keine neue GitHub-Veröffentlichung:
-die frühere Freigabe für acht Projekte wird nicht auf dieses neue Projekt ausgedehnt.
+gebucht, Gebühren erhoben oder Geräte gekauft. Am 27.10.2026 hat der Nutzer auch dieses POS-Projekt ausdrücklich zur öffentlichen
+GitHub-Veröffentlichung freigegeben. Quellen: https://github.com/Leterel/pos-zukunft.
 Ein lokaler Quellstand ist noch keine Veröffentlichungslizenz; die spätere Lizenz
 für Selbstbau und Weitergabe bleibt ausdrücklich festzulegen.
