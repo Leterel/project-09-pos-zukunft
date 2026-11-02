@@ -39,3 +39,15 @@ GitHub-Veröffentlichung freigegeben. Quellen: https://github.com/Leterel/projec
 Der eigene Quellcode ist seit dem Open-Source-Auftrag vom 02.11.2026 unter der
 MIT-Lizenz verfügbar; siehe LICENSE. Selbstbau, Anpassung und Weitergabe sind
 damit erlaubt. Optionaler bezahlter Support bleibt ein separates Angebot.
+
+## Entwicklung und Übergabe
+
+[AGENTS.md](AGENTS.md) bündelt den Einstieg für Entwickler und KI-Agenten; [TESTING.md](TESTING.md) nennt reproduzierbare Prüfungen und deren Grenzen. Der aktuelle Übergabestand steht in [HANDOFF.md](HANDOFF.md).
+
+## Lokaler Demoexport und Wiederherstellung
+
+„Demodaten exportieren“ lädt den aktuellen Demostand als JSON herunter. In einer frischen, unbenutzten Demo lässt sich die Datei unter „Demoexport wiederherstellen“ auswählen. Erst die Vorschau prüfen, dann „In leere Demo übernehmen“ bestätigen. Vorhandene Verkäufe, Warenkörbe oder geänderte Einstellungen werden nicht überschrieben. Es gibt bewusst keinen Schalter zum erzwungenen Ersetzen.
+
+Maximal 2 MiB je Exportdatei. Überschreitet ein großer Demostand dieses Limit, wird kein Export als erfolgreich ausgegeben; die bestehenden Browserdaten bleiben erhalten. Ungültige Versionen, unplausible Ereignisse und zu große Dateien werden abgewiesen. Nur bekannte Felder werden übernommen. Übernahme und Leerstandsprüfung erfolgen in derselben IndexedDB-Transaktion; bei Speicherfehler kein Teilimport. Die Warenkorbkennung wird erneuert.
+
+Das ist ein lokaler Datenmitnahme-Test mit synthetischen Daten. Keine Integritäts-/Authentizitätssignatur, fiskalische Wiederherstellung, automatische Sicherung oder Produktionsfreigabe. Ein Export ist erst nach geprüftem Rücklesen als brauchbare Demokopie zu behandeln. Keine echten Kundendaten verwenden.

@@ -2,7 +2,7 @@ import {createServer} from 'node:http';
 import {readFile} from 'node:fs/promises';
 import {pathToFileURL} from 'node:url';
 import {resolve} from 'node:path';
-const files=new Map([['/',['index.html','text/html; charset=utf-8']],['/app.mjs',['app.mjs','text/javascript']],['/model.mjs',['model.mjs','text/javascript']],['/store.mjs',['store.mjs','text/javascript']],['/style.css',['style.css','text/css']]]);
+const files=new Map([['/',['index.html','text/html; charset=utf-8']],['/app.mjs',['app.mjs','text/javascript']],['/model.mjs',['model.mjs','text/javascript']],['/backup.mjs',['backup.mjs','text/javascript']],['/store.mjs',['store.mjs','text/javascript']],['/style.css',['style.css','text/css']]]);
 export function createLocalServer(){return createServer(async(req,res)=>{
  const host=req.headers.host||'';
  if(!/^(127\.0\.0\.1|localhost)(:\d+)?$/.test(host)){res.writeHead(403);return res.end('Nur lokaler Testzugriff.');}

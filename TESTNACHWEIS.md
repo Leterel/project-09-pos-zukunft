@@ -38,3 +38,7 @@ auf dessen index.mjs setzen, dann node tests/browser.mjs. Testausgaben liegen in
 test-results/ und werden nicht als Kundendaten mitgeliefert. Liefernachweise sind
 separat im Chat unter outputs/20261027/POS/nachweise. Keine Runtime-Abhängigkeiten.
 
+
+## 02.11.2026 — lokale Demowiederherstellung
+
+8 Modell-Testgruppen, 10 bestehende Browser-Prüfgruppen und 6 neue Wiederherstellungs-Prüfgruppen bestanden. Echter lokaler Export/Import-Rundlauf, Schutz bestehender Daten, konkurrierende Importe und atomarer Fehlerpfad geprüft. Keine Zahlung oder Fiskalprüfung. Import ausschließlich in eine frische leere Demo; keine vorhandenen Daten überschrieben. Details und Reproduktion in TESTING.md. Frühere Einträge beschreiben ihren damaligen Stand.
