@@ -1,11 +1,13 @@
 import {access} from './store.mjs';
 import {parseEuro,total,overview} from './model.mjs';
+import {MAX_BACKUP_BYTES,decodeBackup,encodeBackup,describeBackup,pristine} from './backup.mjs';
 const $=selector=>document.querySelector(selector),money=cents=>new Intl.NumberFormat('de-DE',{style:'currency',currency:'EUR'}).format(cents/100),id=()=>crypto.randomUUID();
 let state,busy=false;
+let backupPreview=null,previewSequence=0;
 const channel=typeof BroadcastChannel==='function'?new BroadcastChannel('pos-zukunft-demo'):null;
 function announce(message,error=false){$('#status').textContent=message;$('#status').classList.toggle('error',error);}
 function button(label,handler){const b=document.createElement('button');b.type='button';b.textContent=label;b.onclick=handler;return b;}
-function lock(){document.querySelectorAll('button').forEach(b=>b.disabled=busy);$('#complete').disabled=busy||!state?.cart.length;}
+function lock(){document.querySelectorAll('button').forEach(b=>b.disabled=busy);$('#complete').disabled=busy||!state?.cart.length;$('#restore-confirm').disabled=busy||!backupPreview||!state||!pristine(state);$('#restore-file').disabled=busy;}
 async function act(action,message){if(busy)return;busy=true;lock();announce('Wird lokal gespeichert …');try{state=await access(action);render();announce(message);channel?.postMessage('changed');return true;}catch(error){announce(error.message,true);return false;}finally{busy=false;lock();}}
 function render(){
  $('#shop-name').textContent=state.name;$('#configuration-name').value=state.name;$('#products').replaceChildren(...state.products.map(product=>{const b=button('',()=>act({type:'add',productId:product.id,nextCartId:id()},'Artikel lokal im Testwarenkorb gespeichert.'));b.className='product';const name=document.createElement('span'),price=document.createElement('strong');name.textContent=product.name;price.textContent=money(product.cents);b.append(name,price);return b;}));
@@ -22,6 +24,19 @@ $('#product-form').onsubmit=async event=>{event.preventDefault();try{const cents
 $('#complete').onclick=async()=>{const cartId=state.cartId,saleId=id();if(await act({type:'sale',id:saleId,at:new Date().toISOString(),cartId,nextCartId:id(),method:$('#method').value},'Testverkauf lokal gespeichert. Keine Zahlung ausgelöst.'))showReceipt(state.events.find(e=>e.id===saleId),false);};
 $('#close-day').onclick=()=>act({type:'close',id:id(),at:new Date().toISOString()},'Test-Abschlussmarkierung lokal gespeichert. Kein fiskalischer Tagesabschluss.');
 $('#receipt-close').onclick=()=>$('#receipt').close();$('#print').onclick=()=>window.print();
-$('#export').onclick=async()=>{try{const current=await access(),url=URL.createObjectURL(new Blob([JSON.stringify({format:'pos-zukunft-demo',version:1,state:current},null,2)],{type:'application/json'})),a=document.createElement('a');a.href=url;a.download='pos-demo-export.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);announce('Demodaten exportiert. Kein steuerlicher Export und keine Import-/Wiederherstellungsfunktion in diesem Prototyp.');}catch(error){announce(error.message,true);}};
+$('#export').onclick=async()=>{try{const current=await access(),text=encodeBackup(current),url=URL.createObjectURL(new Blob([text],{type:'application/json'})),a=document.createElement('a');a.href=url;a.download='pos-demo-export.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);announce('Demodaten exportiert. Wiederherstellung nur in einer leeren unbenutzten Demo. Kein steuerlicher Export.');}catch(error){announce(error.message,true);}};
+$('#restore-file').onchange=async()=>{
+ const sequence=++previewSequence,file=$('#restore-file').files[0];backupPreview=null;$('#restore-preview').textContent='';lock();if(!file)return;
+ try{
+  if(file.size<1||file.size>MAX_BACKUP_BYTES)throw Error('Demoexport muss 1 Byte bis 2 MiB groß sein.');
+  const backup=decodeBackup(await file.text());if(sequence!==previewSequence)return;
+  backupPreview=backup;const summary=describeBackup(backup);
+  $('#restore-preview').textContent=`Vorschau: ${summary.name} · ${summary.products} Artikel · ${summary.cartLines} Warenkorbzeilen · ${summary.count} Testverkäufe · ${summary.stornos} Stornos · ${money(summary.net)} Testsaldo. `+(state&&pristine(state)?'Noch nichts importiert. Übernahme bewusst bestätigen.':'Übernahme gesperrt: Diese Demo wurde bereits benutzt. Bestehende Daten werden nicht überschrieben.');
+ }catch(error){if(sequence===previewSequence)announce(error.message,true);}finally{if(sequence===previewSequence)lock();}
+};
+$('#restore-confirm').onclick=async()=>{
+ if(!backupPreview)return;
+ if(await act({type:'restore',backup:backupPreview,nextCartId:id()},'Demoexport vollständig lokal übernommen. Keine Zahlung oder Produktionsbuchung.')){backupPreview=null;++previewSequence;$('#restore-file').value='';$('#restore-preview').textContent='Wiederherstellung abgeschlossen. Vorhandene Exporte bleiben unverändert.';lock();}
+};
 channel?.addEventListener('message',async()=>{if(busy)return;try{state=await access();render();}catch(error){announce(error.message,true);}});
 try{state=await access();render();announce('Bereit für einen Testverkauf. Alle Beträge sind Demo, keine echte Zahlung.');}catch(error){announce(error.message,true);document.querySelectorAll('button').forEach(b=>b.disabled=true);}

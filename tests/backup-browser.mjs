@@ -1,0 +1,33 @@
+import assert from 'node:assert/strict';
+import {mkdir,writeFile,readFile} from 'node:fs/promises';
+import {resolve,join} from 'node:path';
+import {pathToFileURL} from 'node:url';
+import {createLocalServer} from '../server.mjs';
+import {initial,reduce} from '../model.mjs';
+import {encodeBackup} from '../backup.mjs';
+const {chromium}=await import(process.env.PLAYWRIGHT_MODULE?pathToFileURL(resolve(process.env.PLAYWRIGHT_MODULE)).href:'playwright');
+const output=resolve('test-results/backup');await mkdir(output,{recursive:true});
+const server=createLocalServer();await new Promise(r=>server.listen(0,'127.0.0.1',r));let browser;const checks=[];
+try{
+ browser=await chromium.launch({channel:'chrome',headless:true});const errors=[];const origin=`http://127.0.0.1:${server.address().port}`;
+ const context=await browser.newContext({viewport:{width:1200,height:1000}}),page=await context.newPage();page.on('pageerror',e=>errors.push(e.message));
+ let state=reduce(initial(),{type:'configure',name:'<img src=x onerror=alert(1)> Demo'});state=reduce(state,{type:'add',productId:'kabel',nextCartId:'fixture-cart'});state=reduce(state,{type:'sale',cartId:'fixture-cart',nextCartId:'fixture-next',id:'sale-1',at:'2026-11-02T12:00:00.000Z',method:'cash-demo'});
+ const text=encodeBackup(state),file={name:'synthetic-export.json',mimeType:'application/json',buffer:Buffer.from(text)};
+ await page.goto(origin);await page.getByText('Bereit für einen Testverkauf.',{exact:false}).waitFor();
+ await page.locator('#restore-file').setInputFiles({name:'broken.json',mimeType:'application/json',buffer:Buffer.from('{bad')});await page.locator('#status.error').waitFor();assert.equal(await page.locator('#restore-confirm').isDisabled(),true);assert.equal(await page.locator('#history .sale').count(),0);
+ await page.locator('#restore-file').setInputFiles(file);await page.waitForFunction(()=>!document.getElementById('restore-confirm').disabled);
+ assert.match(await page.locator('#restore-preview').textContent(),/1 Testverkäufe/);assert.equal(await page.locator('#restore-preview img').count(),0);assert.equal(await page.locator('#history .sale').count(),0);
+ await page.locator('#restore-confirm').click();await page.waitForFunction(()=>document.getElementById('status').textContent.includes('vollständig lokal übernommen'));
+ assert.equal(await page.locator('#history .sale').count(),1);assert.equal(await page.locator('#shop-name').textContent(),state.name);assert.equal(await page.locator('#shop-name img').count(),0);
+ await page.reload();await page.locator('#history .sale').waitFor();assert.equal(await page.locator('#shop-name').textContent(),state.name);checks.push('Invalid input cannot import; valid preview is inert; explicit commit restores history across reload; HTML remains text');
+ const downloadEvent=page.waitForEvent('download');await page.locator('#export').click();const download=await downloadEvent;const exported=await readFile(await download.path());
+ const roundContext=await browser.newContext(),round=await roundContext.newPage();await round.goto(origin);await round.getByText('Bereit für einen Testverkauf.',{exact:false}).waitFor();await round.locator('#restore-file').setInputFiles({name:download.suggestedFilename(),mimeType:'application/json',buffer:exported});await round.waitForFunction(()=>!document.getElementById('restore-confirm').disabled);await round.locator('#restore-confirm').click();await round.waitForFunction(()=>document.getElementById('status').textContent.includes('vollständig lokal übernommen'));assert.equal(await round.locator('#history .sale').count(),1);assert.equal(await round.locator('#shop-name').textContent(),state.name);await roundContext.close();checks.push('Real UI download can restore into a separate fresh browser database');
+ await page.locator('#restore-file').setInputFiles(file);await page.waitForFunction(()=>document.getElementById('restore-preview').textContent.includes('gesperrt'));assert.equal(await page.locator('#restore-confirm').isDisabled(),true);
+ const rejected=await page.evaluate(async backup=>{const{access}=await import('./store.mjs');try{await access({type:'restore',backup,nextCartId:'bad-restore'});return false;}catch{return (await access()).events.length===1;}},state);assert.equal(rejected,true);checks.push('Used demo blocks overwrite both in UI and atomic storage transaction');
+ const raceContext=await browser.newContext();const racer=await raceContext.newPage();await racer.goto(origin);await racer.getByText('Bereit für einen Testverkauf.',{exact:false}).waitFor();
+ const results=await racer.evaluate(async backup=>{const{access}=await import('./store.mjs');const results=await Promise.allSettled([access({type:'restore',backup,nextCartId:'first'}),access({type:'restore',backup,nextCartId:'second'})]);return {success:results.filter(r=>r.status==='fulfilled').length,rejected:results.filter(r=>r.status==='rejected').length,events:(await access()).events.length};},state);
+ assert.deepEqual(results,{success:1,rejected:1,events:1});await raceContext.close();checks.push('Concurrent restore attempts commit exactly once');
+ const failContext=await browser.newContext();await failContext.addInitScript(()=>{IDBObjectStore.prototype.put=function(){throw new DOMException('Synthetic restore quota failure','QuotaExceededError');};});const fail=await failContext.newPage();await fail.goto(origin);await fail.getByText('Bereit für einen Testverkauf.',{exact:false}).waitFor();await fail.locator('#restore-file').setInputFiles(file);await fail.waitForFunction(()=>!document.getElementById('restore-confirm').disabled);await fail.locator('#restore-confirm').click();await fail.locator('#status.error').waitFor();assert.equal(await fail.locator('#history .sale').count(),0);await fail.reload();assert.equal(await fail.locator('#history .sale').count(),0);await failContext.close();checks.push('Quota failure aborts entire restore; no partial history or false success after reload');
+ await page.setViewportSize({width:390,height:844});await page.locator('#restore-file').scrollIntoViewIfNeeded();assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);await page.screenshot({path:join(output,'mobile-restore.png'),fullPage:true});assert.deepEqual(errors,[]);checks.push('Restore controls fit 390px without overflow; browser has no unhandled exceptions');
+ await writeFile(join(output,'verification.json'),JSON.stringify({passed:true,checks,syntheticDataOnly:true,realPayments:false},null,2));console.log(checks.join('\n'));
+}finally{await browser?.close();server.closeAllConnections();await new Promise(r=>server.close(r));}

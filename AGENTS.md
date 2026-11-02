@@ -21,7 +21,7 @@ Tests: `node --test tests/*.test.mjs; node tests/browser.mjs`. Bei mehreren Befe
 - Projektwerkzeuge ändern keine anderen Projektquellen. Build-/Testartefakte in isolierten, ignorierten Arbeitsordnern halten. Vorhandene Ausgaben nicht unbesehen überschreiben.
 
 ## Nächste sichere Etappe
-Export/Wiederherstellung und kleine Branchen-Pilothypothese konkretisieren; Produktionsanforderungen getrennt aus offiziellen Quellen prüfen.
+Demoexport/-wiederherstellung lokal geprüft. Kleine Branchen-Pilothypothese mit Testperson prüfen; Produktionsanforderungen bleiben getrennt offen.
 
 ## Übergabe
 HANDOFF.md aktualisieren: Ausgangscommit/Branch, konkrete Änderungsliste, ausgeführte Befehle, Ergebnis, ausgelassene Tests samt Grund, Risiken und nächste Etappe. Nur tatsächlich ausgeführte Tests als bestanden ausweisen. Vor Merge Diff und Tests prüfen; externe Freigaben bleiben offen.

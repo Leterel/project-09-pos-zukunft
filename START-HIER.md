@@ -23,8 +23,10 @@ prüfendes Geschäftsmodell; keine Buchung oder Zahlung dafür ist implementiert
 
 Speicherung nur in diesem Browserprofil und unter dieser lokalen Adresse.
 Browserreinigung oder Verlust des Profils kann alle Demodaten löschen. Der JSON-
-Export ist eine Datenmitnahme-Demo, kein steuerlicher Export; Import/Restore sind
-noch nicht implementiert. Maximal 500 Demoevents, 40 Warenkorbzeilen und 99 Stück
+Export ist eine Datenmitnahme-Demo, kein steuerlicher Export. Unter „Demoexport
+wiederherstellen“ eine JSON-Datei (maximal 2 MiB) auswählen, Vorschau prüfen und
+die Übernahme bestätigen. Das funktioniert nur in einer unbenutzten leeren Demo,
+etwa in einem frischen Test-Browserprofil. Bestehende Daten werden nicht ersetzt. Maximal 500 Demoevents, 40 Warenkorbzeilen und 99 Stück
 pro Zeile. Der bereits geladene Tab kann ohne Netzwerk weiter testen, aber ein
 Neuladen erfordert weiterhin den lokalen Server. Keine installierbare Offline-PWA,
 Synchronisierung, Hardwareanbindung oder Stromausfallgarantie.
