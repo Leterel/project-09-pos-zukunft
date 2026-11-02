@@ -39,3 +39,7 @@ GitHub-Veröffentlichung freigegeben. Quellen: https://github.com/Leterel/projec
 Der eigene Quellcode ist seit dem Open-Source-Auftrag vom 02.11.2026 unter der
 MIT-Lizenz verfügbar; siehe LICENSE. Selbstbau, Anpassung und Weitergabe sind
 damit erlaubt. Optionaler bezahlter Support bleibt ein separates Angebot.
+
+## Entwicklung und Übergabe
+
+[AGENTS.md](AGENTS.md) bündelt den Einstieg für Entwickler und KI-Agenten; [TESTING.md](TESTING.md) nennt reproduzierbare Prüfungen und deren Grenzen. Der aktuelle Übergabestand steht in [HANDOFF.md](HANDOFF.md).
